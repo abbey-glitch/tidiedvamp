@@ -4,6 +4,7 @@ server.use(express.json());
 const path = require('path')
 const fs = require('fs').promises;
 const readline = require("readline")
+let filepath = ''
 const r1 = readline.createInterface({
                 input:process.stdin,
                 output:process.stdout
@@ -16,20 +17,26 @@ async function promptforFolder(){
         })
     })
 }
-
+// create file
+async function prompforFilename(){
+    return new Promise((resolve)=>{
+        r1.question("enter a filename with extenson: ", (filename)=>{
+            resolve(filename.trim())
+        })
+    })
+}
 // async function startserver() {
     // // endpoint to create directory
 
 server.get('/createfolder', async(req, res)=>{
     const foldername = await promptforFolder()
-
-    const filename = 'index.html'
-    const filepath = path.join(foldername, filename)
+    const filename = await prompforFilename()
+    filepath = path.join(foldername, filename)
     try{
         // check if directory exist
         const folder = await fs.mkdir(foldername, {recursive:true})
         
-        await fs.writeFile(filepath,  `<h3>Hello</h3>`)
+        await fs.writeFile(filepath,  'Hello word')
         const stat = await fs.stat(filepath)
         res.send({message:"folder created and file inserted",
             filesize:stat.size
@@ -67,7 +74,7 @@ server.get('/deletefolder', async(req, res)=>{
 server.get('/', async(req, res)=>{
 
     try {
-        const data = await fs.readFile('sample.txt', 'utf-8');
+        const data = await fs.readFile(filepath, 'utf-8');
         res.send(data);
     } catch (err) {
         res.status(500).send("Error reading file");
